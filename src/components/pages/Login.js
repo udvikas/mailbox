@@ -2,19 +2,25 @@ import React, { useState, useRef } from "react";
 import { Col, Button, Row, Card, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { authActions } from "../Redux-Store/AuthSlice";
+import store from "../Redux-Store/store";
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [passwordMatchError, setPasswordMatchError] = useState(false);
-  const [loginError, setLoginError] = useState(null);
-  const navigate = useNavigate();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const confirmPasswordInputRef = useRef();
-
+  const [isLogin, setIsLogin] = useState(true);
+  const [passwordMatchError, setPasswordMatchError] = useState(true);
+  const [showError, setShowError] = useState("");
+  const [signupInProgress, setSignupInProgress] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
-    setPasswordMatchError(false);
+    // setPasswordMatchError(false);
   };
 
   const resetFields = () => {
@@ -29,10 +35,14 @@ export default function Login() {
     if (isLogin) {
       const enteredEmail = emailInputRef.current.value;
       const enteredPassword = passwordInputRef.current.value;
+      if(!enteredEmail || !enteredPassword) {
+        setPasswordMatchError(false)
+      }else {
+        setPasswordMatchError(true)
+      }
 
       url =
         "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBoDzEaj33vD6OOA1qXKih6QtigxI8MsXU";
-
       axios
         .post(url, {
           email: enteredEmail,
@@ -42,33 +52,39 @@ export default function Login() {
         .then((res) => {
           if (res.status === 200) {
             return res.data;
+      
           } else {
             let errorMessage = "Authentication failed";
             throw new Error(errorMessage);
           }
         })
         .then((data) => {
-          console.log("successfully signedin!");
-          localStorage.setItem("idToken", data.idToken);
           navigate("/home");
+          console.log("successfully signedin!");
+          dispatch(authActions.login({
+            token:data.idToken,
+            email:data.email
+          }))
+          console.log('state', store.getState());
           resetFields();
-        })
-        .catch((err) => console.log("err", err.message));
-      setLoginError(
-        "Authentication failed. Please check your email and password."
-      );
+        }).catch((err) => console.log("err", err.message));
     } else {
       const enteredEmail = emailInputRef.current.value;
       const enteredPassword = passwordInputRef.current.value;
       const enteredConfirmPassword = confirmPasswordInputRef.current.value;
 
       if (enteredPassword !== enteredConfirmPassword) {
-        setPasswordMatchError(true);
+        setPasswordMatchError(false);
         return;
+      } else {
+        setPasswordMatchError(true);
       }
 
       url =
         "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBoDzEaj33vD6OOA1qXKih6QtigxI8MsXU";
+        setSignupInProgress(true);
+        setSignupSuccess("");
+        setShowError("");
       axios
         .post(url, {
           email: enteredEmail,
@@ -77,20 +93,33 @@ export default function Login() {
           returnSecureToken: true,
         })
         .then((res) => {
-          if (res.status === 200) {
+          if (res.status === 200 && !isLogin) {
+            setSignupSuccess("Signup Successful, you may login");
+            setShowError("");
             return res.data;
           } else {
+            // setShowError(data.error.message)
             let errorMessage = "Authentication failed";
             throw new Error(errorMessage);
+
           }
         })
         .then((data) => {
-          console.log(data);
+          dispatch(authActions.login({
+            token:data.idToken,
+            email:data.email
+          }))
+          console.log('state', store.getState());
           console.log("successfully Signedup!");
           resetFields();
+          if(isLogin) {
           navigate("/");
+          }
         })
-        .catch((err) => console.log("err", err.message));
+        .catch((err) => console.log("err", err.message))
+        .finally(() => {
+          setSignupInProgress(false)
+        })
     }
   };
 
@@ -139,11 +168,14 @@ export default function Login() {
                           required
                         />
                       </Form.Group>
-                      {passwordMatchError && (
+                      {!passwordMatchError && (
                         <Alert variant="danger">
                           Password and confirm password do not match.
                         </Alert>
                       )}
+                      {showError && <p style={{ color: "red" }}>{showError}</p>}
+                      {signupInProgress && <p>Sending Request...</p>}
+                      {signupSuccess && <p style={{ color: "green" }}>{signupSuccess}</p>}
                       <div className="d-grid">
                         <Button variant="secondary" type="submit">
                           {isLogin ? "Login" : "Create Account"}
@@ -173,8 +205,10 @@ export default function Login() {
                           required
                         />
                       </Form.Group>
-                      {loginError && (
-                        <Alert variant="danger">{loginError}</Alert>
+                      {!passwordMatchError && (
+                        <Alert variant="danger">
+                          Credentials do not match.
+                        </Alert>
                       )}
                       <div className="d-grid">
                         <Button variant="secondary" type="submit">

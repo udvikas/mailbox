@@ -1,4 +1,4 @@
-.mainProfile1 {
+.mainProfile {
     display: flex;
     margin-top: 15px;
     padding-bottom: 15px;
@@ -6,13 +6,12 @@
     font-style: italic;
     font-size: 18px;
     align-items: center;
-    justify-content: space-around;
   }
-  .welcome1 {
+  .welcome {
     margin-left: 30px;
     flex-basis: 75%;
   }
-  .profile1 {
+  .profile {
     font-size: 15px;
     flex-basis: 25%;
     background-color: #d4c181;
@@ -23,44 +22,42 @@
     text-align: center;
   }
   
-  .profile1 a {
+  .profile a {
     text-decoration: none;
   }
   /* .container1 {
     border: 1px solid red;
   } */
-  .mainContainer1 {
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;    
+  .mainContainer {
+    /* border: 2px solid black; */
     margin: auto;
-    width: 96%;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     padding: 2rem;
-    margin-top: 1rem;
+    margin-top: 2rem;
     
   }
-  .Space1{
+  .Space{
     margin-right: 2.8rem;
   }
   .Space1 {
     margin-right: 0.5rem;
   }
-  .txtarea1{
+  .txtarea{
     margin-left: 4rem;
   }
-  .editors1{
+  .editors{
     margin-left: 4rem;
   }
-  .stacks1{
+  .stacks{
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .btnSend1{
+  .btnSend{
     margin-left: 4rem;
     margin-top: -4rem;
   }
-  .log{
-    margin-right: 2rem;
+  .log1{
+    margin-left: 4rem;
   }
-  .email1 {
-    color: green;
-  }
+ 
