@@ -24,14 +24,22 @@ const Inbox = () => {
     });
     console.log("mailid", mail.id);
     dispatch(mailActions.viewMailHandle({ id: mail.id }));
+    dispatch(mailActions.decrementNewMailCount()); // Dispatch the action to decrement new mail count
   };
   useEffect(() => {
     const transformData = (data) => {
       const newData = [];
+      let newMailCount = 0;
       for (let key in data) {
-        newData.push({ id: key, ...data[key] });
+        const mailItem = { id: key, ...data[key] };
+        newData.push(mailItem);
+        if (!mailItem.isRead) {
+          newMailCount++; // Increment the new mail count for unread mails
+        }
       }
       dispatch(mailActions.updateReceivedMail({ mail: newData }));
+      dispatch(mailActions.resetNewMailCount()); // Reset the new mail count when Inbox component mounts
+      dispatch(mailActions.incrementNewMailCount()); // Increment the new mail count for the newly received mails
     };
     sendRequest(
       {
@@ -46,6 +54,7 @@ const Inbox = () => {
       <Table striped bordered hover>
         <thead>
           <tr>
+            <th>Status</th>
             <th>From</th>
             <th>Subject</th>
             <th>Content</th>
@@ -55,6 +64,9 @@ const Inbox = () => {
         <tbody>
           {receivedMail.map((mail) => (
             <tr key={mail.id}>
+              <td style={{ fontSize: "40px", color: "blue" }}>
+                {!mail.isRead && "."}
+              </td>
               <td>{mail.sender}</td>
               <td>{mail.subject}</td>
               <td>{mail.body}</td>

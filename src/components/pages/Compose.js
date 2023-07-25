@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 // import { Editor } from "react-draft-wysiwyg";
 import Form from "react-bootstrap/Form";
-import './Compose.css'
+import "./Compose.css";
 import { useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
 // import { EditorState } from "draft-js";
@@ -12,7 +12,7 @@ import useHttp from "../hooks/use-http";
 const Compose = () => {
   const { sendRequest } = useHttp();
   const email = useSelector((state) => state.auth.email);
-  const senderMail = email?.replace("@","").replace(".","")
+  const senderMail = email?.replace("@", "").replace(".", "");
   // const dispatch = useDispatch()
   const emailRef = useRef();
   const subjectRef = useRef();
@@ -29,17 +29,21 @@ const Compose = () => {
   const mailSubmitHandler = async (e) => {
     e.preventDefault();
 
-     // Check if the emailRef.current is not null before accessing its value
-  const enteredEmail = emailRef.current && emailRef.current.value;
+    // Check if the emailRef.current is not null before accessing its value
+    const enteredEmail = emailRef.current && emailRef.current.value;
 
-  // Perform additional validation, if needed
-  if (!enteredEmail || !enteredEmail.includes("@") || !enteredEmail.includes(".")) {
-    // Show an error message or handle the invalid email address
-    console.log("Invalid email address");
-    return;
-  }
+    // Perform additional validation, if needed
+    if (
+      !enteredEmail ||
+      !enteredEmail.includes("@") ||
+      !enteredEmail.includes(".")
+    ) {
+      // Show an error message or handle the invalid email address
+      console.log("Invalid email address");
+      return;
+    }
 
-    const receiverMail = enteredEmail.replace("@","").replace(".","");
+    const receiverMail = enteredEmail.replace("@", "").replace(".", "");
     const recevierMailData = {
       sender: email,
       subject: subjectRef.current.value,
@@ -63,70 +67,7 @@ const Compose = () => {
       method: "POST",
       body: senderMailData,
     });
-   formRef.current.reset();
-    
-    //   to: sendToEmailInputRef.current.value,
-    //   emailSub: subInputRef.current.value,
-    //   emailContent: convertToHTML(editorState.getCurrentContent()),
-    // };
-
-    // try {
-    //   // Save the mail in sender's "Sent" folder
-    //   const senderEmail = auth.email.replace(/[@.]/g, "");
-    //   const res = await fetch(
-    //     `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/${senderEmail}/sentEmails.json`,
-    //     {
-    //       method: "POST",
-    //       body: JSON.stringify({ ...emailObj }),
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     }
-    //   );
-    //   const senderData = await res.json();
-    //   console.log("senderData", senderData);
-    //   setEditorState(null);
-
-    //   dispatch(
-    //     inboxActions.addItems({
-    //       emailSub: subInputRef.current.value,
-    //       from: auth.email,
-    //       date: new Date(),
-    //     })
-    //   );
-    // } catch (error) {
-    //   console.log(error);
-    // }
-
-    // const emailObj2 = {
-    //   from: auth.email,
-    //   emailSub: subInputRef.current.value,
-    //   emailContent: convertToHTML(editorState.getCurrentContent()),
-    //   date: new Date(),
-    // };
-
-    // try {
-    //   const receiverEmail = sendToEmailInputRef.current.value.replace(
-    //     /[@.]/g,
-    //     ""
-    //   );
-    //   const res = await fetch(
-    //     `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/${receiverEmail}/receivedEmails.json`,
-    //     {
-    //       method: "POST",
-    //       body: JSON.stringify({ ...emailObj2 }),
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     }
-    //   );
-    //   const receiverData = await res.json();
-    //   console.log("reciverData", receiverData);
-    // } catch (error) {
-    //   console.log(error);
-    // }
-    
-    // setEditorState("");
+    formRef.current.reset();
   };
 
   return (

@@ -32,7 +32,7 @@ const Sent = () => {
       },
       transformData
     );
-  }, [sendRequest,changed, dispatch, email]);
+  }, [sendRequest, changed, dispatch, email]);
   return (
     <div>
       <Table striped bordered hover>
@@ -46,7 +46,7 @@ const Sent = () => {
         </thead>
         <tbody>
           {sentMail.map((mail) => (
-            <tr key={mail.id}>
+            <tr key={mail.id} style={{margin:'auto'}}>
               <td>{mail.sentTo}</td>
               <td>{mail.subject}</td>
               <td>{mail.body}</td>
@@ -55,7 +55,7 @@ const Sent = () => {
                   View
                 </Button>
               </td>
-              <ViewMail mail={mail} email={email} type={"sent"}/>
+              <ViewMail mail={mail} email={email} type={"sent"} />
             </tr>
           ))}
         </tbody>

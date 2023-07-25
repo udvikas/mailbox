@@ -15,7 +15,7 @@ import { mailActions } from "../Redux-Store/mail-slice";
 
 const Home = () => {
   const auth = useSelector((state) => state.auth);
-
+  const { newMailCount } = useSelector((state) => state.mail);
   const dispatch = useDispatch();
   
   const logoutHandler = () => {
@@ -47,7 +47,7 @@ const Home = () => {
               <Nav.Link eventKey="first">Compose</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="second">Inbox</Nav.Link>
+              <Nav.Link eventKey="second">Inbox {newMailCount > 0 && <span style={{color:'red', fontWeight:'bold'}}>({newMailCount})</span>} </Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="third">Sent</Nav.Link>
