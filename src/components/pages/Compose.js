@@ -1,96 +1,144 @@
-import React, { useRef, useState } from "react";
-import { Editor } from "react-draft-wysiwyg";
+import React, { useRef } from "react";
+// import { Editor } from "react-draft-wysiwyg";
 import Form from "react-bootstrap/Form";
-import "./Compose.css";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import axios from "axios";
+import './Compose.css'
+import { useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
-import { authActions } from "../Redux-Store/AuthSlice";
+// import { EditorState } from "draft-js";
+// import { convertToHTML } from "draft-convert";
+// import { inboxActions } from "../Redux-Store/inbox-slice";
+import useHttp from "../hooks/use-http";
 
 const Compose = () => {
-  const [editorState, setEditorState] = useState(null);
-  const dispatch = useDispatch();
-  const navigate =  useNavigate();
-  const getEmail = localStorage.getItem("email");
-
-
-  const onEditorStateChange = (newEditorState) => {
-    setEditorState(newEditorState);
-  };
+  const { sendRequest } = useHttp();
+  const email = useSelector((state) => state.auth.email);
+  const senderMail = email?.replace("@","").replace(".","")
+  // const dispatch = useDispatch()
   const emailRef = useRef();
-  const subRef = useRef();
-  const textRef = useRef();
-  const email = localStorage.getItem("email");
-  const newEmail = email ? email.replace(/[@.]/g, "") : "";
-  const resetFields = () => {
-    emailRef.current.value = "";
-    subRef.current.value = "";
-    textRef.current.value = "";
-  };
-  const mailSubmitHandler = (e) => {
+  const subjectRef = useRef();
+  const mailBodyRef = useRef();
+
+  // const sendToEmailInputRef = useRef();
+  // const subInputRef = useRef();
+  const formRef = useRef();
+
+  // const [editorState, setEditorState] = useState(() =>
+  //   EditorState.createEmpty()
+  // );
+
+  const mailSubmitHandler = async (e) => {
     e.preventDefault();
 
-    const enteredEmail = emailRef.current.value;
-    const enteredSub = subRef.current.value;
-    const enteredText = textRef.current.value;
+     // Check if the emailRef.current is not null before accessing its value
+  const enteredEmail = emailRef.current && emailRef.current.value;
 
-    let url = `https://shopping-app-814b1-default-rtdb.firebaseio.com/${newEmail}mail.json`;
-    axios
-      .post(url, {
-        email: enteredEmail,
-        sub: enteredSub,
-        text: enteredText,
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          let errorMessage = "Authentication failed";
-          throw new Error(errorMessage);
-        }
-      })
-      .then((data) => {
-        console.log(data);
-        resetFields();
-      })
-      .catch((err) => console.log("err", err.message));
+  // Perform additional validation, if needed
+  if (!enteredEmail || !enteredEmail.includes("@") || !enteredEmail.includes(".")) {
+    // Show an error message or handle the invalid email address
+    console.log("Invalid email address");
+    return;
+  }
+
+    const receiverMail = enteredEmail.replace("@","").replace(".","");
+    const recevierMailData = {
+      sender: email,
+      subject: subjectRef.current.value,
+      body: mailBodyRef.current.value,
+      isRead: false,
+    };
+
+    const senderMailData = {
+      sentTo: emailRef.current.value,
+      subject: subjectRef.current.value,
+      body: mailBodyRef.current.value,
+    };
+
+    sendRequest({
+      url: `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/rec${receiverMail}.json`,
+      method: "POST",
+      body: recevierMailData,
+    });
+    sendRequest({
+      url: `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/sent${senderMail}.json`,
+      method: "POST",
+      body: senderMailData,
+    });
+   formRef.current.reset();
+    
+    //   to: sendToEmailInputRef.current.value,
+    //   emailSub: subInputRef.current.value,
+    //   emailContent: convertToHTML(editorState.getCurrentContent()),
+    // };
+
+    // try {
+    //   // Save the mail in sender's "Sent" folder
+    //   const senderEmail = auth.email.replace(/[@.]/g, "");
+    //   const res = await fetch(
+    //     `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/${senderEmail}/sentEmails.json`,
+    //     {
+    //       method: "POST",
+    //       body: JSON.stringify({ ...emailObj }),
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     }
+    //   );
+    //   const senderData = await res.json();
+    //   console.log("senderData", senderData);
+    //   setEditorState(null);
+
+    //   dispatch(
+    //     inboxActions.addItems({
+    //       emailSub: subInputRef.current.value,
+    //       from: auth.email,
+    //       date: new Date(),
+    //     })
+    //   );
+    // } catch (error) {
+    //   console.log(error);
+    // }
+
+    // const emailObj2 = {
+    //   from: auth.email,
+    //   emailSub: subInputRef.current.value,
+    //   emailContent: convertToHTML(editorState.getCurrentContent()),
+    //   date: new Date(),
+    // };
+
+    // try {
+    //   const receiverEmail = sendToEmailInputRef.current.value.replace(
+    //     /[@.]/g,
+    //     ""
+    //   );
+    //   const res = await fetch(
+    //     `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/${receiverEmail}/receivedEmails.json`,
+    //     {
+    //       method: "POST",
+    //       body: JSON.stringify({ ...emailObj2 }),
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     }
+    //   );
+    //   const receiverData = await res.json();
+    //   console.log("reciverData", receiverData);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+    
+    // setEditorState("");
   };
 
-  const backpageHandler = () => {
-    navigate("/home");
-  }
-  const logoutHandler = () => {
-    dispatch(authActions.logout());
-    navigate("/");
-  }
   return (
     <>
-     <div className="mainProfile">
-        <span className="welcome">Welcome to Your Mail Box !!!</span>
-        <span className="email1">{getEmail}</span>
-        <span className="log1"><Button variant="info" onClick={logoutHandler}>Logout</Button></span>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "end",
-          marginBottom: "-1rem",
-          marginTop: "1rem",
-          marginRight: "2rem",
-        }}
-      >
-        <Button onClick={backpageHandler}>Back to Home Page</Button>
-      </div>
       <div className="mainContainer">
         <div className="container1">
-          <Form onSubmit={mailSubmitHandler}>
+          <Form onSubmit={mailSubmitHandler} ref={formRef}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  marginBottom: "1rem",
                 }}
               >
                 <Form.Label>
@@ -114,7 +162,7 @@ const Compose = () => {
                     <b>Subject</b>
                   </span>
                 </Form.Label>
-                <Form.Control type="text" ref={subRef} />
+                <Form.Control type="text" ref={subjectRef} />
               </div>
             </Form.Group>
             <Form.Group
@@ -122,18 +170,18 @@ const Compose = () => {
               controlId="exampleForm.ControlTextarea1"
             >
               <div className="txtarea">
-                <Form.Control as="textarea" rows={5} ref={textRef} />
+                <Form.Control as="textarea" rows={7} ref={mailBodyRef} />
               </div>
             </Form.Group>
-            <div className="editors">
+            {/* <div className="editors">
               <Editor
                 editorState={editorState}
                 toolbarClassName="toolbarClassName"
                 wrapperClassName="wrapperClassName"
                 editorClassName="editorClassName"
-                onEditorStateChange={onEditorStateChange}
+                onEditorStateChange={setEditorState}
               />
-            </div>
+            </div> */}
             <Button variant="primary" type="submit" className="btnSend">
               Send
             </Button>

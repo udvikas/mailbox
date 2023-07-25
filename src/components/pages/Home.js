@@ -1,74 +1,69 @@
-import React from "react";
-
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import Col from 'react-bootstrap/Col';
+import Nav from 'react-bootstrap/Nav';
+import Row from 'react-bootstrap/Row';
+import Tab from 'react-bootstrap/Tab';
 import Button from "react-bootstrap/Button";
-
-import Stack from "react-bootstrap/Stack";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import "./Home.css";
 import { authActions } from "../Redux-Store/AuthSlice";
-import Table from 'react-bootstrap/Table';
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import Compose from "./Compose";
+import Inbox from "./Inbox";
+import Sent from "./Sent";
+import { mailActions } from "../Redux-Store/mail-slice";
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const getEmail = localStorage.getItem("email");
-  
-  const composeHandler = () => {
-    navigate("/compose")
-  }
+  const auth = useSelector((state) => state.auth);
 
+  const dispatch = useDispatch();
+  
   const logoutHandler = () => {
-    dispatch(authActions.logout());
-    navigate("/");
-  }
+      dispatch(authActions.logout())
+      dispatch(mailActions.updateReceivedMail({mail: []}))
+      dispatch(mailActions.updateSentMail({mail: []}))
+     }
+
   return (
     <>
       <div className="mainProfile1">
         <span className="welcome1">Welcome to Your Mail Box !!!</span>
-        <span className="email1">{getEmail}</span>
-        <span className="log"><Button variant="info" onClick={logoutHandler}>Logout</Button></span>
+        <span className="email1"> {auth.email}</span>
+        <span className="log">
+          <Button variant="info" onClick={logoutHandler}>
+            Logout
+          </Button>
+        </span>
       </div>
-      <div className="mainContainer1">
-      <Stack gap={3} direction="horizontal" className="stacks1">
-            <div>
-            <div className="p-2">
-              <Button>Inbox</Button>
-              <Button style={{marginLeft:'1rem'}}>Sent</Button>
-            </div>
-            </div>
-            <div className="p-2">
-              <Button onClick={composeHandler}>Compose</Button>
-            </div>
-          </Stack>
-          
-          <Table striped bordered hover>
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>From</th>
-          <th>Subject</th>
-          <th>Body</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>Mark</td>
-          <td>Otto</td>
-          <td>@mdo</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>Jacob</td>
-          <td>Thornton</td>
-          <td>@fat</td>
-        </tr>
-      </tbody>
-    </Table>
-        
+      <div className="compose">
+
       </div>
+      <div style={{marginTop:'1rem', marginLeft:'1rem'}}>
+      <Tab.Container id="left-tabs-example" defaultActiveKey="first">
+      <Row>
+        <Col sm={2}>
+          <Nav variant="pills" className="flex-column">
+            <Nav.Item>
+              <Nav.Link eventKey="first">Compose</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="second">Inbox</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="third">Sent</Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Col>
+        <Col sm={9}>
+          <Tab.Content>
+            <Tab.Pane eventKey="first"><Compose/></Tab.Pane>
+            <Tab.Pane eventKey="second"><Inbox/></Tab.Pane>
+            <Tab.Pane eventKey="third"><Sent/></Tab.Pane>
+          </Tab.Content>
+        </Col>
+      </Row>
+    </Tab.Container>
+    </div>
     </>
   );
 };

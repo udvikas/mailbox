@@ -1,128 +1,91 @@
 import React, { useState, useRef } from "react";
 import { Col, Button, Row, Card, Form, Alert } from "react-bootstrap";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { authActions } from "../Redux-Store/AuthSlice";
-import store from "../Redux-Store/store";
+import useHttp from "../hooks/use-http";
 
 export default function Login() {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const confirmPasswordInputRef = useRef();
-  const [isLogin, setIsLogin] = useState(true);
-  const [passwordMatchError, setPasswordMatchError] = useState(true);
-  const [showError, setShowError] = useState("");
-  const [signupInProgress, setSignupInProgress] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState("");
+  const sendRequest = useHttp().sendRequest;
+  const isLoggedIn = useSelector((state) => state.auth.haveAccount);
+  const [passwordMatchError, setPasswordMatchError] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  const switchAuthModeHandler = () => {
-    setIsLogin((prevState) => !prevState);
-    // setPasswordMatchError(false);
+
+  const loginSignupHandler = () => {
+    dispatch(authActions.haveAccount());
   };
 
-  const resetFields = () => {
-    emailInputRef.current.value = "";
-    passwordInputRef.current.value = "";
-    confirmPasswordInputRef.current.value = "";
-  };
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
+    const enteredEmail = emailInputRef.current.value;
+    const enteredPassword = passwordInputRef.current.value;
+    const enteredConPassword = isLoggedIn
+      ? null
+      : confirmPasswordInputRef.current.value;
 
-    let url;
-    if (isLogin) {
-      const enteredEmail = emailInputRef.current.value;
-      const enteredPassword = passwordInputRef.current.value;
-      if(!enteredEmail || !enteredPassword) {
-        setPasswordMatchError(false)
-      }else {
-        setPasswordMatchError(true)
-      }
-
-      url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBoDzEaj33vD6OOA1qXKih6QtigxI8MsXU";
-      axios
-        .post(url, {
-          email: enteredEmail,
-          password: enteredPassword,
-          returnSecureToken: true,
-        })
-        .then((res) => {
-          if (res.status === 200) {
-            return res.data;
-      
-          } else {
-            let errorMessage = "Authentication failed";
-            throw new Error(errorMessage);
-          }
-        })
-        .then((data) => {
-          navigate("/home");
-          console.log("successfully signedin!");
-          dispatch(authActions.login({
-            token:data.idToken,
-            email:data.email
-          }))
-          console.log('state', store.getState());
-          resetFields();
-        }).catch((err) => console.log("err", err.message));
-    } else {
-      const enteredEmail = emailInputRef.current.value;
-      const enteredPassword = passwordInputRef.current.value;
-      const enteredConfirmPassword = confirmPasswordInputRef.current.value;
-
-      if (enteredPassword !== enteredConfirmPassword) {
-        setPasswordMatchError(false);
+    if (!isLoggedIn) {
+      // Handle Sign Up
+      if (enteredPassword !== enteredConPassword) {
+        setPasswordMatchError(true);
         return;
       } else {
-        setPasswordMatchError(true);
+        setPasswordMatchError(false);
       }
+    }
 
-      url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBoDzEaj33vD6OOA1qXKih6QtigxI8MsXU";
-        setSignupInProgress(true);
-        setSignupSuccess("");
-        setShowError("");
-      axios
-        .post(url, {
+    if (!isLoggedIn) {
+      sendRequest({
+        url: "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAN6DmGKUsukndPy4YuaPtcJOezDqk3XXk",
+        method: "POST",
+        body: {
           email: enteredEmail,
           password: enteredPassword,
-          confirmPassword: enteredConfirmPassword,
+          conPassword: enteredConPassword,
           returnSecureToken: true,
-        })
-        .then((res) => {
-          if (res.status === 200 && !isLogin) {
-            setSignupSuccess("Signup Successful, you may login");
-            setShowError("");
-            return res.data;
-          } else {
-            // setShowError(data.error.message)
-            let errorMessage = "Authentication failed";
-            throw new Error(errorMessage);
+        },
+      });
+      alert("Your Account Has Been Sucessfully Created You Can Now Login");
 
-          }
-        })
-        .then((data) => {
-          dispatch(authActions.login({
-            token:data.idToken,
-            email:data.email
-          }))
-          console.log('state', store.getState());
-          console.log("successfully Signedup!");
-          resetFields();
-          if(isLogin) {
-          navigate("/");
-          }
-        })
-        .catch((err) => console.log("err", err.message))
-        .finally(() => {
-          setSignupInProgress(false)
-        })
+      if (!enteredEmail || !enteredPassword) {
+        setPasswordMatchError(true);
+      } else {
+        setPasswordMatchError(false);
+      }
+    } else {
+      const saveLoginData = (data) => {
+        dispatch(
+          authActions.login({ token: data.idToken, email: enteredEmail })
+        );
+      };
+
+      sendRequest(
+        {
+          url: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAN6DmGKUsukndPy4YuaPtcJOezDqk3XXk",
+          method: "POST",
+          body: {
+            email: enteredEmail,
+            password: enteredPassword,
+            returnSecureToken: true,
+          },
+        },
+        saveLoginData
+      );
+    }
+    console.log('successfully signed up');
+    emailInputRef.current.value = "";
+    passwordInputRef.current.value = "";
+    if (!isLoggedIn) {
+      confirmPasswordInputRef.current.value = ""; // Reset confirmPasswordInputRef only when signing up
     }
   };
-
+  const handleForgotPassword = () => {
+    navigate("/forgot");
+  };
   return (
     <div style={{ marginTop: "-2rem" }}>
       <Row className="vh-100 d-flex justify-content-center align-items-center">
@@ -132,100 +95,69 @@ export default function Login() {
             <Card.Body>
               <div className="mb-1 mt-md-4">
                 <h2 className="fw-bold mb-1 text-center text-uppercase ">
-                  {isLogin ? "Login" : "Sign Up"}
+                  {isLoggedIn ? "Login" : "Sign Up"}
                 </h2>
                 <div className="mb-1">
-                  {!isLogin ? (
-                    <Form onSubmit={submitHandler}>
-                      <Form.Group className="mb-1" controlId="formBasicEmail">
-                        <label className="text-center">Email address</label>
-                        <Form.Control
-                          type="email"
-                          ref={emailInputRef}
-                          required
-                        />
-                      </Form.Group>
+                  <Form onSubmit={submitHandler}>
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                      <label className="text-center">Email address</label>
+                      <Form.Control type="email" ref={emailInputRef} required />
+                    </Form.Group>
 
+                    <Form.Group className="mb-3" controlId="formBasicPassword1">
+                      <label>Password</label>
+                      <Form.Control
+                        type="password"
+                        ref={passwordInputRef}
+                        required
+                      />
+                    </Form.Group>
+                    {!isLoggedIn && (
                       <Form.Group
-                        className="mb-1"
-                        controlId="formBasicPassword1"
+                        className="mb-3"
+                        controlId="formBasicPassword"
                       >
-                        <label>Password</label>
-                        <Form.Control
-                          type="password"
-                          ref={passwordInputRef}
-                          required
-                        />
-                      </Form.Group>
-                      <Form.Group
-                        className="mb-1"
-                        controlId="formBasicPassword2"
-                      >
-                        <label>Confirm Password</label>
+                        <label> Confirm Password</label>
                         <Form.Control
                           type="password"
                           ref={confirmPasswordInputRef}
                           required
                         />
                       </Form.Group>
-                      {!passwordMatchError && (
-                        <Alert variant="danger">
-                          Password and confirm password do not match.
-                        </Alert>
+                    )}
+                    {passwordMatchError && (
+                      <Alert variant="danger">Credentials do not match.</Alert>
+                    )}
+                    <div
+                      className="d-grid"
+                      style={{
+                        textAlign: "center",
+                        cursor: "pointer",
+                        color: "blue",
+                      }}
+                    >
+                      {isLoggedIn && (
+                        <p onClick={handleForgotPassword}>
+                          <strong>Forgot Password?</strong>
+                        </p>
                       )}
-                      {showError && <p style={{ color: "red" }}>{showError}</p>}
-                      {signupInProgress && <p>Sending Request...</p>}
-                      {signupSuccess && <p style={{ color: "green" }}>{signupSuccess}</p>}
-                      <div className="d-grid">
-                        <Button variant="secondary" type="submit">
-                          {isLogin ? "Login" : "Create Account"}
-                        </Button>
-                      </div>
-                      <br />
-                    </Form>
-                  ) : (
-                    <Form onSubmit={submitHandler}>
-                      <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <label className="text-center">Email address</label>
-                        <Form.Control
-                          type="email"
-                          ref={emailInputRef}
-                          required
-                        />
-                      </Form.Group>
+                    </div>
+                    <div className="d-grid">
+                      <Button variant="secondary" type="submit">
+                        {isLoggedIn ? "Login" : "Create Account"}
+                      </Button>
+                    </div>
+                    <br />
+                  </Form>
 
-                      <Form.Group
-                        className="mb-3"
-                        controlId="formBasicPassword1"
-                      >
-                        <label>Password</label>
-                        <Form.Control
-                          type="password"
-                          ref={passwordInputRef}
-                          required
-                        />
-                      </Form.Group>
-                      {!passwordMatchError && (
-                        <Alert variant="danger">
-                          Credentials do not match.
-                        </Alert>
-                      )}
-                      <div className="d-grid">
-                        <Button variant="secondary" type="submit">
-                          {isLogin ? "Login" : "Create Account"}
-                        </Button>
-                      </div>
-                      <br />
-                    </Form>
-                  )}
                   <div className="mt-3">
-                    {isLogin ? (
+                    {isLoggedIn ? (
                       <h6 className="mb-0  text-center">
                         Don't have an account?? <hr />
                         <Button
                           variant="info"
                           type="submit"
-                          onClick={switchAuthModeHandler}
+                          onClick={loginSignupHandler}
                         >
                           Signup
                         </Button>
@@ -236,7 +168,7 @@ export default function Login() {
                         <Button
                           variant="info"
                           type="submit"
-                          onClick={switchAuthModeHandler}
+                          onClick={loginSignupHandler}
                         >
                           Login
                         </Button>

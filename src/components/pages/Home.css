@@ -64,3 +64,19 @@
   .email1 {
     color: green;
   }
+  .compose{
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 2rem;
+    margin-bottom: -0.5rem;
+    margin-top: 0.5rem;
+  }
+  .inboxCon {
+    width: 100%;
+    border: 1px solid black;
+    margin-top: 1.5rem;
+}
+.inb:hover {
+  background-color: lightgreen;
+  color: yellow;
+}
