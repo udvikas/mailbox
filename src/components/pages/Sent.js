@@ -14,7 +14,7 @@ const Sent = () => {
   const email = senderMail?.replace("@", "").replace(".", "");
   console.log(email);
 
-  const viewMailHandler = () => {
+  const viewMailHandler = (mail) => {
     dispatch(mailActions.mailHandler());
   };
 
@@ -22,7 +22,8 @@ const Sent = () => {
     const transformData = (data) => {
       const newData = [];
       for (let key in data) {
-        newData.push({ id: key, ...data[key] });
+        const mailItem = { id: key, ...data[key] }; // Set isRead to false by default
+        newData.push(mailItem);
       }
       dispatch(mailActions.updateSentMail({ mail: newData }));
     };

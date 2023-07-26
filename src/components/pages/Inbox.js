@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { mailActions } from "../Redux-Store/mail-slice";
 import { Button } from "react-bootstrap";
 import ViewMail from "./ViewMail";
-// import { useSelector } from "react-redux";
 // import { inboxActions } from "../Redux-Store/inbox-slice";
 
 const Inbox = () => {
@@ -49,6 +48,8 @@ const Inbox = () => {
     );
   }, [sendRequest, changed, dispatch, email]);
 
+ 
+
   return (
     <div>
       <Table striped bordered hover>
@@ -75,7 +76,7 @@ const Inbox = () => {
                   View
                 </Button>
               </td>
-              <ViewMail mail={mail} email={email} type={"recevied"} />
+              <ViewMail mail={mail} email={email} type={"received"} />
             </tr>
           ))}
         </tbody>
