@@ -3,7 +3,6 @@ import { useState, useCallback,useEffect } from "react";
 const useHttp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [changed, setChanged] = useState(false); // Add a 'changed' state
 
   const sendRequest = useCallback(async (requestConfig, applyData = null) => {
     setIsLoading(true);
@@ -25,9 +24,7 @@ const useHttp = () => {
       if (applyData) {
         applyData(data);
       }  
-      
-      // Update the 'changed' state when the data changes
-      setChanged(prevChanged => !prevChanged);
+
 
     } catch (err) {
       setError(err.message || "Something went wrong!");
@@ -36,15 +33,12 @@ const useHttp = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setChanged((prevChanged) => !prevChanged);
-  }, [isLoading, error]);
+
 
   return {
     isLoading,
     error,
     sendRequest,
-    changed,
   };
 };
 
