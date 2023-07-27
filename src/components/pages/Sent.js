@@ -7,9 +7,9 @@ import useHttp from "../hooks/use-http";
 import ViewMail from "./ViewMail";
 
 const Sent = () => {
-  const { sendRequest,changed } = useHttp();
+  const { sendRequest,  } = useHttp();
   const dispatch = useDispatch();
-  const { sentMail } = useSelector((state) => state.mail);
+  const { sentMail, changed } = useSelector((state) => state.mail);
   const viewMail = useSelector((state) => state.mail.viewSentMail);
   const senderMail = useSelector((state) => state.auth.email);
   const email = senderMail?.replace("@", "").replace(".", "");
@@ -19,7 +19,6 @@ const Sent = () => {
     dispatch(mailActions.viewMailHandle({ id: mail.id }));
   };
 
-  
   // useEffect(() => {
   //   const fetchSentMailData = async () => {
   //     try {
@@ -59,7 +58,6 @@ const Sent = () => {
     );
   }, [sendRequest, changed, dispatch, email]);
 
-
   return (
     <div>
       <Table striped bordered hover>
@@ -82,13 +80,13 @@ const Sent = () => {
                   View
                 </Button>
               </td>
+              {viewMail && (
+                <ViewMail mailId={viewMail.id} email={email} type={"sent"} />
+              )}
             </tr>
           ))}
         </tbody>
       </Table>
-      {viewMail && (
-        <ViewMail mailId={viewMail.id} email={email} type={"sent"} />
-      )}
     </div>
   );
 };
