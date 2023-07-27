@@ -7,16 +7,40 @@ import useHttp from "../hooks/use-http";
 import ViewMail from "./ViewMail";
 
 const Sent = () => {
-  const { sendRequest } = useHttp();
+  const { sendRequest,changed } = useHttp();
   const dispatch = useDispatch();
-  const { sentMail, changed } = useSelector((state) => state.mail);
+  const { sentMail } = useSelector((state) => state.mail);
+  const viewMail = useSelector((state) => state.mail.viewSentMail);
   const senderMail = useSelector((state) => state.auth.email);
   const email = senderMail?.replace("@", "").replace(".", "");
   console.log(email);
 
   const viewMailHandler = (mail) => {
-    dispatch(mailActions.mailHandler());
+    dispatch(mailActions.viewMailHandle({ id: mail.id }));
   };
+
+  
+  // useEffect(() => {
+  //   const fetchSentMailData = async () => {
+  //     try {
+  //       const response = await sendRequest({
+  //         url: `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/sent${email}.json`,
+  //       });
+
+  //       const responseData = await response.json();
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch data");
+  //       }
+
+  //       const transformedData = Object.entries(responseData).map(([id, data]) => ({ id, ...data }));
+  //       dispatch(mailActions.updateSentMail({ mail: transformedData }));
+  //     } catch (error) {
+  //       // Handle error here if necessary
+  //     }
+  //   };
+
+  //   fetchSentMailData(); // Fetch data when the component mounts or 'changed' state updates
+  // }, [sendRequest, email,changed]); // Include 'changed' as a dependency
 
   useEffect(() => {
     const transformData = (data) => {
@@ -34,6 +58,8 @@ const Sent = () => {
       transformData
     );
   }, [sendRequest, changed, dispatch, email]);
+
+
   return (
     <div>
       <Table striped bordered hover>
@@ -47,20 +73,22 @@ const Sent = () => {
         </thead>
         <tbody>
           {sentMail.map((mail) => (
-            <tr key={mail.id} style={{margin:'auto'}}>
+            <tr key={mail.id} style={{ margin: "auto" }}>
               <td>{mail.sentTo}</td>
               <td>{mail.subject}</td>
               <td>{mail.body}</td>
               <td>
-                <Button variant="success" onClick={viewMailHandler}>
+                <Button variant="success" onClick={() => viewMailHandler(mail)}>
                   View
                 </Button>
               </td>
-              <ViewMail mail={mail} email={email} type={"sent"} />
             </tr>
           ))}
         </tbody>
       </Table>
+      {viewMail && (
+        <ViewMail mailId={viewMail.id} email={email} type={"sent"} />
+      )}
     </div>
   );
 };

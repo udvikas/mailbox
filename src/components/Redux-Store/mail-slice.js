@@ -5,7 +5,8 @@ const mailSlice = createSlice({
   initialState: {
     receivedMail: [],
     sentMail: [],
-    viewMail: null,
+    viewReceivedMail: null, // Separate state for received mail
+    viewSentMail: null, // Separate state for sent mail
     changed: false,
     newMailCount: 0,
   },
@@ -32,19 +33,28 @@ const mailSlice = createSlice({
       // state.receivedMail[index].isRead = true;
       // state.viewMail = !state.viewMail;
 
-      const mailId = action.payload?.id; // Use optional chaining to handle undefined case
+      const mailId = action.payload?.id;
       if (mailId) {
-        const index = state.receivedMail.findIndex(
+        const receivedIndex = state.receivedMail.findIndex(
           (mail) => mail.id === mailId
         );
-        if (index !== -1) {
-          state.receivedMail[index].isRead = true;
-          state.viewMail = state.receivedMail[index]; // Set the mail object to viewMail
+        const sentIndex = state.sentMail.findIndex(
+          (mail) => mail.id === mailId
+        );
+
+        if (receivedIndex !== -1) {
+          state.receivedMail[receivedIndex].isRead = true;
+          state.viewReceivedMail = state.receivedMail[receivedIndex];
+        } else if (sentIndex !== -1) {
+          state.sentMail[sentIndex].isRead = true;
+          state.viewSentMail = state.sentMail[sentIndex];
         } else {
-          state.viewMail = null; // Set to null if the mail with the provided ID is not found
+          state.viewReceivedMail = null;
+          state.viewSentMail = null;
         }
       } else {
-        state.viewMail = null; // Set to null if no mail ID is provided (for Sent.js)
+        state.viewReceivedMail = null;
+        state.viewSentMail = null;
       }
     },
     mailHandler(state) {

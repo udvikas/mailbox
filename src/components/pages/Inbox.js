@@ -10,8 +10,9 @@ import ViewMail from "./ViewMail";
 const Inbox = () => {
   const { sendRequest } = useHttp();
   const dispatch = useDispatch();
-  const { receivedMail, changed } = useSelector((state) => state.mail);
+  const { receivedMail, viewReceivedMail} = useSelector((state) => state.mail);
   const senderMail = useSelector((state) => state.auth.email);
+  // const viewMail = useSelector((state) => state.mail.viewReceivedMail);
   const email = senderMail?.replace("@", "").replace(".", "");
   console.log("receivedMail", receivedMail);
 
@@ -25,6 +26,7 @@ const Inbox = () => {
     dispatch(mailActions.viewMailHandle({ id: mail.id }));
     dispatch(mailActions.decrementNewMailCount()); // Dispatch the action to decrement new mail count
   };
+
   useEffect(() => {
     const transformData = (data) => {
       const newData = [];
@@ -46,7 +48,7 @@ const Inbox = () => {
       },
       transformData
     );
-  }, [sendRequest, changed, dispatch, email]);
+  }, [sendRequest, dispatch, email]);
 
  
 
@@ -58,7 +60,7 @@ const Inbox = () => {
             <th>Status</th>
             <th>From</th>
             <th>Subject</th>
-            <th>Content</th>
+            <th>Message</th>
             <th>Read</th>
           </tr>
         </thead>
@@ -75,8 +77,9 @@ const Inbox = () => {
                 <Button variant="success" onClick={() => viewMailHandler(mail)}>
                   View
                 </Button>
+               
               </td>
-              <ViewMail mail={mail} email={email} type={"received"} />
+              {viewReceivedMail &&  <ViewMail mailId={viewReceivedMail.id} email={email} type={"received"} />}
             </tr>
           ))}
         </tbody>

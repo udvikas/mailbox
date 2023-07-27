@@ -1,30 +1,19 @@
 import React, { useRef } from "react";
-// import { Editor } from "react-draft-wysiwyg";
 import Form from "react-bootstrap/Form";
 import "./Compose.css";
-import { useSelector } from "react-redux";
+import {  useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
-// import { EditorState } from "draft-js";
-// import { convertToHTML } from "draft-convert";
-// import { inboxActions } from "../Redux-Store/inbox-slice";
 import useHttp from "../hooks/use-http";
 
 const Compose = () => {
   const { sendRequest } = useHttp();
   const email = useSelector((state) => state.auth.email);
   const senderMail = email?.replace("@", "").replace(".", "");
-  // const dispatch = useDispatch()
   const emailRef = useRef();
   const subjectRef = useRef();
   const mailBodyRef = useRef();
-
-  // const sendToEmailInputRef = useRef();
-  // const subInputRef = useRef();
+ 
   const formRef = useRef();
-
-  // const [editorState, setEditorState] = useState(() =>
-  //   EditorState.createEmpty()
-  // );
 
   const mailSubmitHandler = async (e) => {
     e.preventDefault();
@@ -66,7 +55,7 @@ const Compose = () => {
       url: `https://ecommerce-auth-a598c-default-rtdb.firebaseio.com/sent${senderMail}.json`,
       method: "POST",
       body: senderMailData,
-    });
+    })
     formRef.current.reset();
   };
 
@@ -114,15 +103,7 @@ const Compose = () => {
                 <Form.Control as="textarea" rows={7} ref={mailBodyRef} />
               </div>
             </Form.Group>
-            {/* <div className="editors">
-              <Editor
-                editorState={editorState}
-                toolbarClassName="toolbarClassName"
-                wrapperClassName="wrapperClassName"
-                editorClassName="editorClassName"
-                onEditorStateChange={setEditorState}
-              />
-            </div> */}
+  
             <Button variant="primary" type="submit" className="btnSend">
               Send
             </Button>
